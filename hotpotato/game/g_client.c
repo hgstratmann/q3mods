@@ -1020,6 +1020,7 @@ void ClientBegin( int clientNum ) {
 	flags = client->ps.eFlags;
 	memset( &client->ps, 0, sizeof( client->ps ) );
 	client->ps.eFlags = flags;
+	client->hasBeenKilledByPotato = qfalse;
 
 	// locate ent at a spawn point
 	ClientSpawn( ent );
@@ -1037,6 +1038,25 @@ void ClientBegin( int clientNum ) {
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();
+}
+
+#define PLAYER_POTATO_DAMAGE 2
+#define PLAYER_POTATO_DAMAGE_RATE 500
+
+/*
+	Hurt the player.
+ */
+void G_HurtPlayer(gentity_t* ent)
+{
+	if(ent->client->hasHotPotato)
+	{
+		// Do damage.
+		G_Damage(ent, NULL, NULL, NULL, NULL, 
+					PLAYER_POTATO_DAMAGE, DAMAGE_NO_ARMOR, MOD_SHOTGUN);
+	}
+
+	// Setup next time this function will be called.
+	ent->nextthink = level.time + PLAYER_POTATO_DAMAGE_RATE;
 }
 
 /*
@@ -1066,6 +1086,17 @@ void ClientSpawn(gentity_t *ent) {
 
 	index = ent - g_entities;
 	client = ent->client;
+
+	//potato...
+	if(client->hasBeenKilledByPotato)
+	{
+		if ( level.clients[ index ].pers.connected != CON_CONNECTED ) {
+			return;
+		}
+
+		// make them a spectator
+		SetTeam( &g_entities[ index ], "s" );
+	}
 
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -1170,18 +1201,23 @@ void ClientSpawn(gentity_t *ent) {
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
-	
+	ent->think = G_HurtPlayer;
+	ent->nextthink = level.time + PLAYER_POTATO_DAMAGE_RATE;
+
+	client->hasHotPotato = qfalse;
+
 	VectorCopy (playerMins, ent->r.mins);
 	VectorCopy (playerMaxs, ent->r.maxs);
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
-	if ( g_gametype.integer == GT_TEAM ) {
-		client->ps.ammo[WP_MACHINEGUN] = 50;
-	} else {
-		client->ps.ammo[WP_MACHINEGUN] = 100;
-	}
+	// Don't spawn with machine gun.
+//	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
+//	if ( g_gametype.integer == GT_TEAM ) {
+//		client->ps.ammo[WP_MACHINEGUN] = 50;
+//	} else {
+//		client->ps.ammo[WP_MACHINEGUN] = 100;
+//	}
 
 	client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GAUNTLET );
 	client->ps.ammo[WP_GAUNTLET] = -1;
@@ -1205,8 +1241,8 @@ void ClientSpawn(gentity_t *ent) {
 		G_KillBox( ent );
 		trap_LinkEntity (ent);
 
-		// force the base weapon up
-		client->ps.weapon = WP_MACHINEGUN;
+		// force the base weapon up which should be the Gauntlet in potato mode.
+		client->ps.weapon = WP_GAUNTLET;
 		client->ps.weaponstate = WEAPON_READY;
 
 	}

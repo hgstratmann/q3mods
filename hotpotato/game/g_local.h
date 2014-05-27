@@ -267,6 +267,9 @@ struct gclient_s {
 
 	qboolean	readyToExit;		// wishes to leave the intermission
 
+	qboolean	hasHotPotato;		// player has hot potato.
+	qboolean	hasBeenKilledByPotato;
+
 	qboolean	noclip;
 
 	int			lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION

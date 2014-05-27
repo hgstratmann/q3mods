@@ -1000,6 +1000,11 @@ void BeginIntermission( void ) {
 		if (client->health <= 0) {
 			respawn(client);
 		}
+
+		// potato reset.
+		SetTeam( client, "f" );
+		client->client->hasBeenKilledByPotato = qfalse;
+
 		MoveClientToIntermission( client );
 	}
 
@@ -1705,6 +1710,171 @@ void G_RunThink (gentity_t *ent) {
 
 /*
 ================
+G_ClearPlayerPotatos
+================
+*/
+void G_ClearPlayerPotatos()
+{
+	int i;
+	gclient_t	*cl;
+
+	for ( i = 0 ; i < level.maxclients ; i++ ) 
+	{
+		cl = &level.clients[ level.sortedClients[i] ];
+		cl->hasHotPotato = qfalse;
+	}
+}
+
+/*
+================
+G_FixPlayerGuns
+================
+*/
+void G_FixPlayerGuns()
+{
+	int i;
+	gclient_t	*cl;
+
+	for ( i = 0 ; i < level.maxclients ; i++ ) 
+	{
+		cl = &level.clients[ level.sortedClients[i] ];
+
+		/* Give our potato carrier a plasma gun. */
+		if( cl->hasHotPotato )
+		{
+			cl->ps.stats[STAT_WEAPONS] = ( 1 << WP_PLASMAGUN );
+			cl->ps.ammo[WP_PLASMAGUN] = 999;
+			cl->ps.weapon = WP_PLASMAGUN;
+			cl->ps.weaponstate = WEAPON_READY;
+		}
+		else
+		{
+			cl->ps.stats[STAT_WEAPONS] = ( 1 << WP_GAUNTLET );
+			cl->ps.ammo[WP_PLASMAGUN] = 0;
+			cl->ps.weapon = WP_GAUNTLET;
+			cl->ps.weaponstate = WEAPON_READY;
+		}
+	}
+}
+
+/*
+================
+G_ManageHotPotato
+================
+*/
+qboolean G_PlayerHasHotPotato()
+{
+	int i;
+	gclient_t	*cl;
+
+	for ( i = 0 ; i < level.maxclients ; i++ ) 
+	{
+		cl = &level.clients[ level.sortedClients[i] ];
+
+		/* Check if this player has a potato. */
+		if( cl->hasHotPotato )
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+/*
+================
+G_GivePlayerHotPotato
+================
+*/
+qboolean G_GivePlayerHotPotato()
+{
+	int i;
+	gclient_t	*cl;
+
+	for ( i = 0 ; i < level.maxclients ; i++ ) 
+	{
+		cl = &level.clients[ level.sortedClients[i] ];
+
+		if ( cl->sess.sessionTeam == TEAM_SPECTATOR )
+			continue;
+
+		/* Let's randomly give them the hot potato. */
+		if( rand()%level.maxclients == 1 )
+		{
+			trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " has the hot potato.\n\"", cl->pers.netname));
+			trap_SendServerCommand( cl->ps.clientNum, va("cp \"" S_COLOR_WHITE "You have the " S_COLOR_RED "hot" S_COLOR_WHITE " potato!\n\"", cl->pers.netname));
+			cl->hasHotPotato = qtrue;
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+/*
+================
+G_CheckForPotatoWinner
+================
+*/
+void G_CheckForPotatoWinner()
+{
+	gclient_t	*cl;
+	int i;
+	int lastClientID = 0;
+
+	for ( i = 0 ; i < level.maxclients ; i++ ) 
+	{
+		cl = &level.clients[ level.sortedClients[i] ];
+		if ( cl->sess.sessionTeam != TEAM_SPECTATOR )
+			lastClientID = level.sortedClients[i];
+	}
+
+//	trap_SendServerCommand( -1, va("cp \"num alive: %d\n\"", level.numPlayingClients));
+
+	// Check if all clients but one are left alive.
+	if ( level.numPlayingClients == 1 )
+	{
+		cl = &level.clients[ lastClientID ];
+		cl->ps.persistant[PERS_SCORE] = 999;
+
+		CalculateRanks();
+		BeginIntermission();
+	}
+}
+
+/*
+================
+G_ManageHotPotato
+================
+*/
+void G_ManageHotPotato()
+{
+	// Gotta have some player's.
+	if(level.numConnectedClients < 2)
+	{
+		G_ClearPlayerPotatos();
+		G_FixPlayerGuns();
+
+		trap_SendServerCommand( -1, va("cp \"" S_COLOR_WHITE "Need 1 more player to begin.\n\""));
+		return;
+	}
+
+	// Give somebody the potato
+	if( !G_PlayerHasHotPotato() )
+	{
+		if( G_GivePlayerHotPotato() )
+		{
+			G_FixPlayerGuns();
+		}
+	} 
+
+	// Check for winner.
+	G_CheckForPotatoWinner();
+}
+
+
+/*
+================
 G_RunFrame
 
 Advances the non-player objects in the world
@@ -1803,6 +1973,9 @@ start = trap_Milliseconds();
 		}
 	}
 end = trap_Milliseconds();
+
+	// give some player the hot potato
+	G_ManageHotPotato();
 
 	// see if it is time to do a tournement restart
 	CheckTournament();

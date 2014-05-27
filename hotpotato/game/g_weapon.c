@@ -112,8 +112,8 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 #endif
 
 	damage = 50 * s_quadFactor;
-	G_Damage( traceEnt, ent, ent, forward, tr.endpos,
-		damage, 0, MOD_GAUNTLET );
+//	G_Damage( traceEnt, ent, ent, forward, tr.endpos,
+//		damage, 0, MOD_GAUNTLET );
 
 	return qtrue;
 }
