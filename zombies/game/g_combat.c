@@ -102,7 +102,7 @@ void TossClientItems( gentity_t *self ) {
 		item = BG_FindItemForWeapon( weapon );
 
 		// spawn the item
-		Drop_Item( self, item, 0 );
+//		Drop_Item( self, item, 0 );
 	}
 
 	// drop all the powerups if not in teamplay
@@ -468,6 +468,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	}
 #endif
 	self->client->ps.pm_type = PM_DEAD;
+	self->client->hasBeenKilledByPotato = qtrue;
 
 	if ( attacker ) {
 		killer = attacker->s.number;
@@ -511,9 +512,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		attacker->client->lastkilled_client = self->s.number;
 
 		if ( attacker == self || OnSameTeam (self, attacker ) ) {
-			AddScore( attacker, self->r.currentOrigin, -1 );
+		//	AddScore( attacker, self->r.currentOrigin, -1 );
 		} else {
-			AddScore( attacker, self->r.currentOrigin, 1 );
+		//	AddScore( attacker, self->r.currentOrigin, 1 );
 
 			if( meansOfDeath == MOD_GAUNTLET ) {
 				
@@ -544,7 +545,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		}
 	} else {
-		AddScore( self, self->r.currentOrigin, -1 );
+	//	AddScore( self, self->r.currentOrigin, -1 );
 	}
 
 	// Add team bonuses
@@ -817,6 +818,8 @@ dflags		these flags are used to control how T_Damage works
 	DAMAGE_NO_PROTECTION	kills godmode, armor, everything
 ============
 */
+void G_ClearPlayerPotatos();
+void G_FixPlayerGuns();
 
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			   vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
@@ -868,6 +871,22 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		return;
 	}
 #endif
+	// check if the target was hit by a plasma ball.
+	if (mod == MOD_GAUNTLET)
+	{
+		// remove the potato from the attacker.
+	//	G_ClearPlayerPotatos();
+
+		targ->client->hasHotPotato = qtrue;
+
+		trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " has been infected.\n\"", targ->client->pers.netname));
+		trap_SendServerCommand( targ->client->ps.clientNum, va("cp \"" S_COLOR_WHITE "You have been " S_COLOR_RED "infected" S_COLOR_WHITE "!\n\"",  targ->client->pers.netname));
+
+		// Fix the guns.
+		G_FixPlayerGuns();
+	}
+
+
 	// reduce damage by the attacker's handicap value
 	// unless they are rocket jumping
 	if ( attacker->client && attacker != targ ) {

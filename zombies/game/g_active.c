@@ -842,6 +842,9 @@ void ClientThink_real( gentity_t *ent ) {
 	// set speed
 	client->ps.speed = g_speed.value;
 
+	if ( !client->hasHotPotato )
+		client->ps.speed = g_speed.value * 0.7;
+
 #ifdef MISSIONPACK
 	if( bg_itemlist[client->ps.stats[STAT_PERSISTANT_POWERUP]].giTag == PW_SCOUT ) {
 		client->ps.speed *= 1.5;
@@ -1034,10 +1037,15 @@ void ClientThink( int clientNum ) {
 	// phone jack if they don't get any for a while
 	ent->client->lastCmdTime = level.time;
 
+	// Update client potato
+	if(ent->nextthink <= level.time)
+		ent->think(ent);
+
 	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
 		ClientThink_real( ent );
 	}
 }
+
 
 
 void G_RunClient( gentity_t *ent ) {

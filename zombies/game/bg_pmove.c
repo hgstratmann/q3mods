@@ -1178,7 +1178,7 @@ static void PM_GroundTrace( void ) {
 			Com_Printf("%i:Land\n", c_pmove);
 		}
 		
-		PM_CrashLand();
+//		PM_CrashLand();
 
 		// don't do landing time if we were just going down a slope
 		if ( pml.previous_velocity[2] < -200 ) {
@@ -1664,7 +1664,7 @@ static void PM_Weapon( void ) {
 		addTime = 800;
 		break;
 	case WP_PLASMAGUN:
-		addTime = 100;
+		addTime = 800;
 		break;
 	case WP_RAILGUN:
 		addTime = 1500;
