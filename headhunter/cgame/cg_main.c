@@ -1016,12 +1016,17 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.medalAssist = trap_R_RegisterShaderNoMip( "medal_assist" );
 	cgs.media.medalCapture = trap_R_RegisterShaderNoMip( "medal_capture" );
 
+	cgs.media.pbModel = trap_R_RegisterModel( "models/powerups/pokeball/pokeball.md3" );
+	cgs.media.pbIcon = trap_R_RegisterShaderNoMip( "icons/icon_pokeball" );
 
 	memset( cg_items, 0, sizeof( cg_items ) );
 	memset( cg_weapons, 0, sizeof( cg_weapons ) );
 
 	// only register the items that the server says we need
 	strcpy( items, CG_ConfigString( CS_ITEMS) );
+
+	CG_LoadingItem( 1 ); // The pokeball item is at index 1.
+	CG_RegisterItemVisuals( 1 );
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' || cg_buildScript.integer ) {

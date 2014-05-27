@@ -124,6 +124,13 @@ void TossClientItems( gentity_t *self ) {
 			}
 		}
 	}
+
+	// drop pokeballs
+	item = BG_FindItem( "Pokeball" );
+	if (!item)
+		G_Error("Couldn't find item_pokeball with BG_FindItem!");
+	for(i = 0; i < self->pokeballs; i ++)
+		Drop_Item( self, item, rand()%360 );
 }
 
 #ifdef MISSIONPACK
@@ -510,10 +517,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if (attacker && attacker->client) {
 		attacker->client->lastkilled_client = self->s.number;
 
-		if ( attacker == self || OnSameTeam (self, attacker ) ) {
-			AddScore( attacker, self->r.currentOrigin, -1 );
-		} else {
-			AddScore( attacker, self->r.currentOrigin, 1 );
+	//	if ( attacker == self || OnSameTeam (self, attacker ) ) {
+	//		AddScore( attacker, self->r.currentOrigin, -1 );
+	//	} else {
+	//		AddScore( attacker, self->r.currentOrigin, 1 );
 
 			if( meansOfDeath == MOD_GAUNTLET ) {
 				
@@ -542,9 +549,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			}
 			attacker->client->lastKillTime = level.time;
 
-		}
-	} else {
-		AddScore( self, self->r.currentOrigin, -1 );
+//		}
+//	} else {
+//		AddScore( self, self->r.currentOrigin, -1 );
 	}
 
 	// Add team bonuses

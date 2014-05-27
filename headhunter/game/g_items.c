@@ -42,6 +42,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	RESPAWN_HOLDABLE	60
 #define	RESPAWN_MEGAHEALTH	35//120
 #define	RESPAWN_POWERUP		120
+#define RESPAWN_POKEBALL	240
 
 
 //======================================================================
@@ -409,6 +410,12 @@ void RespawnItem( gentity_t *ent ) {
 	ent->nextthink = 0;
 }
 
+// Pickup the pokeball.
+int Pickup_Pokeball( gentity_t *ent, gentity_t *other ) {
+	other->client->ps.stats[STAT_POKEBALLS] += ent->item->quantity;
+	other->pokeballs += ent->item->quantity;
+	return RESPAWN_POKEBALL;
+}
 
 /*
 ===============
@@ -442,6 +449,9 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	case IT_AMMO:
 		respawn = Pickup_Ammo(ent, other);
 //		predict = qfalse;
+		break;
+	case IT_POKEBALL:
+		respawn = Pickup_Pokeball(ent, other);
 		break;
 	case IT_ARMOR:
 		respawn = Pickup_Armor(ent, other);
@@ -503,7 +513,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	G_UseTargets (ent, other);
 
 	// wait of -1 will not respawn
-	if ( ent->wait == -1 ) {
+	if ( ent->wait == -1 || respawn == RESPAWN_POKEBALL ) {
 		ent->r.svFlags |= SVF_NOCLIENT;
 		ent->s.eFlags |= EF_NODRAW;
 		ent->r.contents = 0;

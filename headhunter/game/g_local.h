@@ -143,6 +143,7 @@ struct gentity_s {
 	int			last_move_time;
 
 	int			health;
+	int			pokeballs;
 
 	qboolean	takedamage;
 

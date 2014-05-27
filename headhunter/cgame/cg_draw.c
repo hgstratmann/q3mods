@@ -580,6 +580,15 @@ static void CG_DrawStatusBar( void ) {
 		CG_Draw3DModel( 370 + CHAR_WIDTH*3 + TEXT_ICON_SPACE, 432, ICON_SIZE, ICON_SIZE,
 					   cgs.media.armorModel, 0, origin, angles );
 	}
+
+	// draw our balls #1.
+	// ps->stats[ STAT_POKEBALLS ]
+	origin[0] = 70;
+	origin[1] = 5;
+	origin[2] = 10;
+	angles[YAW] = ( cg.time & 2047 ) * 360 / 2048.0;
+	CG_Draw3DModel( 470 + CHAR_WIDTH*3 + TEXT_ICON_SPACE, 52, ICON_SIZE*2.2, ICON_SIZE*2.2,
+				   cgs.media.pbModel, 0, origin, angles );
 #ifdef MISSIONPACK
 	if( cgs.gametype == GT_HARVESTER ) {
 		origin[0] = 90;
@@ -661,8 +670,24 @@ static void CG_DrawStatusBar( void ) {
 		if ( !cg_draw3dIcons.integer && cg_drawIcons.integer ) {
 			CG_DrawPic( 370 + CHAR_WIDTH*3 + TEXT_ICON_SPACE, 432, ICON_SIZE, ICON_SIZE, cgs.media.armorIcon );
 		}
-
 	}
+
+	//
+	// pokeballs
+	// (draw our balls #2)
+	//
+	value = ps->stats[STAT_POKEBALLS];
+	trap_R_SetColor( colors[0] );
+	CG_DrawField (470, 52, 3, value);
+	trap_R_SetColor( NULL );
+	// if we didn't draw a 3D icon, draw a 2D icon for armor
+	if ( !cg_draw3dIcons.integer && cg_drawIcons.integer ) {
+		CG_DrawPic( 470 + CHAR_WIDTH*3 + TEXT_ICON_SPACE, 
+				 52,
+				 ICON_SIZE, ICON_SIZE, 	
+				 cgs.media.pbIcon );
+	}
+
 #ifdef MISSIONPACK
 	//
 	// cubes

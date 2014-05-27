@@ -108,6 +108,50 @@ void SP_trigger_multiple( gentity_t *ent ) {
 }
 
 
+/*
+==============================================================================
+
+trigger_pokemon
+
+==============================================================================
+*/
+
+// the trigger was just activated
+// ent->activator should be set to the activator so it can be held through a delay
+// so wait for the delay time before firing
+void Touch_Multi_Pokemon( gentity_t *ent, gentity_t *activator ) {
+	ent->activator = activator;
+	if ( ent->nextthink ) {
+		return;		// can't retrigger until the wait is over
+	}
+
+	//Setup next think.
+	ent->think = multi_wait;
+	ent->nextthink = level.time + ( ent->wait + ent->random * crandom() ) * 1000;
+
+	// Give us points.
+	if(ent->activator->pokeballs > 1) {
+
+		AddScore(ent->activator, 
+				 ent->activator->pos1, 
+				 pow(ent->activator->pokeballs-1, 2));
+
+		ent->activator->pokeballs = 1;
+		ent->activator->client->ps.stats[STAT_POKEBALLS] = 0;
+
+		trap_SendConsoleCommand( EXEC_APPEND, va( "play sound/misc/pokeball_cashin.wav\n" ) );
+	}
+}
+
+/*QUAKED trigger_pokemon (.5 .5 .5) ?
+Enter this trigger and you cash-in on your pokekills.
+*/
+void SP_trigger_pokemon( gentity_t *ent ) {
+	ent->touch = Touch_Multi_Pokemon;
+
+	InitTrigger( ent );
+	trap_LinkEntity (ent);
+}
 
 /*
 ==============================================================================

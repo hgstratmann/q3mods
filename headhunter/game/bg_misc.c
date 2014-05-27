@@ -58,6 +58,22 @@ gitem_t	bg_itemlist[] =
 /* sounds */ ""
 	},	// leave index 0 alone
 
+/*QUAKED item_pokeball (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+*/
+	{
+		"item_pokeball", 
+		"sound/misc/pokemon.wav",
+		{ "models/powerups/pokeball/pokeball.md3", 
+		0, 0, 0} ,
+/* icon */		"icons/icon_pokeball",
+/* pickup */	"Pokeball",
+		1,
+		IT_POKEBALL,
+		0,
+/* precache */ "",
+/* sounds */ ""
+	},
+
 	//
 	// ARMOR
 	//
@@ -1056,6 +1072,9 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		if ( ps->ammo[ item->giTag ] >= 200 ) {
 			return qfalse;		// can't hold any more
 		}
+		return qtrue;
+
+	case IT_POKEBALL:
 		return qtrue;
 
 	case IT_ARMOR:

@@ -207,7 +207,8 @@ typedef enum {
 	STAT_PERSISTANT_POWERUP,
 #endif
 	STAT_WEAPONS,					// 16 bit fields
-	STAT_ARMOR,				
+	STAT_ARMOR,		
+	STAT_POKEBALLS,
 	STAT_DEAD_YAW,					// look this direction when dead (FIXME: get rid of?)
 	STAT_CLIENTS_READY,				// bit mask of clients wishing to exit the intermission (FIXME: configstring?)
 	STAT_MAX_HEALTH					// health / armor limit, changable by handicap
@@ -609,6 +610,7 @@ typedef enum {
 // gitem_t->type
 typedef enum {
 	IT_BAD,
+	IT_POKEBALL,
 	IT_WEAPON,				// EFX: rotate + upscale + minlight
 	IT_AMMO,				// EFX: rotate
 	IT_ARMOR,				// EFX: rotate + minlight
